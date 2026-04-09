@@ -1,0 +1,53 @@
+{
+  "_comment": "Copy this file to config/local.json and fill in your deployment values. local.json is gitignored and always takes priority over default.json.",
+
+  "cse": {
+    "_comment_cse": "CSE identity — must be unique per deployment",
+    "sp_id": "//your-domain.io",
+    "cse_id": "/mn-cse-tenant-a",
+    "csebase_rn": "mn-cse-tenant-a",
+    "poa": [
+      "http://localhost:7601"
+    ],
+
+    "_comment_registrar": "Only needed for MN-CSE or ASN-CSE (cse_type 2 or 3). Remove if IN-CSE (cse_type 1).",
+    "registrar": {
+      "ip": "localhost",
+      "port": 7599
+    }
+  },
+
+  "http": {
+    "port": 7601
+  },
+
+  "mqtt": {
+    "enabled": true,
+    "ip": "localhost",
+    "port": 1883
+  },
+
+  "db": {
+    "user": "sm",
+    "pw": "keti1234"
+  },
+
+  "logging": {
+    "level": "debug",
+    "console": {
+      "pretty": true
+    },
+    "file": {
+      "enabled": false
+    }
+  },
+
+  "security": {
+    "helmet": {
+      "enabled": false
+    },
+    "rateLimit": {
+      "enabled": false
+    }
+  }
+}

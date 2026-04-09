@@ -1,0 +1,26 @@
+{
+  "_comment": "Copy this file to config/local.json and fill in your local values. local.json is gitignored and always takes priority over default.json.",
+  "db": {
+    "user": "sm",
+    "pw": "keti1234",
+    "connect_timeout_ms": 5000,
+    "idle_timeout_ms": 30000
+  },
+  "logging": {
+    "level": "debug",
+    "console": {
+      "pretty": true
+    },
+    "file": {
+      "enabled": false
+    }
+  },
+  "security": {
+    "helmet": {
+      "enabled": false
+    },
+    "rateLimit": {
+      "enabled": false
+    }
+  }
+}
