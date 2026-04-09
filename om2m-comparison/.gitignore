@@ -1,0 +1,20 @@
+**/__pycache__
+**/.DS_Store
+venv
+env
+**/.ipynb_checkpoints
+**/*.py[cod]
+
+# Generated benchmark outputs
+output/
+locust_tests/**/_*.csv
+locust_tests/**/*_stats.csv
+locust_tests/**/*_stats_history.csv
+locust_tests/**/*_failures.csv
+locust_tests/**/*_exceptions.csv
+locust_tests/**/*.log
+locust_tests/**/report.html
+locust_tests/**/test_report.html
+
+# Runtime scratch data
+populateOneM2M/ri.json

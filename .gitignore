@@ -1,0 +1,45 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Python
+**/__pycache__/
+**/*.py[cod]
+**/.ipynb_checkpoints/
+**/.pytest_cache/
+**/.mypy_cache/
+.venv/
+venv/
+env/
+
+# Node
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime/build artifacts
+**/logs/
+**/*.log
+**/*.pid
+**/dist/
+**/build/
+**/.nyc_output/
+
+# Research/generated artifacts
+om2m-comparison/output/
+om2m-comparison/locust_tests/**/_*.csv
+om2m-comparison/locust_tests/**/*_stats.csv
+om2m-comparison/locust_tests/**/*_stats_history.csv
+om2m-comparison/locust_tests/**/*_failures.csv
+om2m-comparison/locust_tests/**/*_exceptions.csv
+om2m-comparison/locust_tests/**/*.log
+om2m-comparison/locust_tests/**/report.html
+om2m-comparison/locust_tests/**/test_report.html
+om2m-comparison/populateOneM2M/ri.json
+
+# Local scratch files
+**/diff.txt
