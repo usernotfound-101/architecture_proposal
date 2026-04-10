@@ -1,0 +1,337 @@
+diff --git a/bindings/http.js b/bindings/http.js
+index b5d5863..04d4e0e 100644
+--- a/bindings/http.js
++++ b/bindings/http.js
+@@ -411,38 +411,36 @@ function httpToPrim(http_req) {
+   }
+ 
+   // 'operation' mapping
+-  if (http_req.headers["content-type"] != null) {
+-    if (http_req.headers["content-type"].split(";")[1] == null) {
+-      if (http_req.method === "GET") {
+-        prim.op = 2;
+-      } else if (http_req.method === "PUT") {
+-        prim.op = 3;
+-      } else if (http_req.method === "DELETE") {
+-        prim.op = 4;
+-      } else {
+-        prim.op = 5;
+-      }
+-    } else {
++  const contentType = http_req.headers["content-type"];
++  if (http_req.method === "GET") {
++    prim.op = 2;
++  } else if (http_req.method === "PUT") {
++    prim.op = 3;
++  } else if (http_req.method === "DELETE") {
++    prim.op = 4;
++  } else if (http_req.method === "POST") {
++    // POST with `;ty=` is CREATE, otherwise treat it as NOTIFY unless explicitly overridden.
++    const explicitOp = Number.parseInt(http_req.headers["x-m2m-op"], 10);
++    if (Number.isInteger(explicitOp)) {
++      prim.op = explicitOp;
++    } else if (contentType && /(?:^|\s|;)ty=\d+/.test(contentType)) {
+       prim.op = 1;
+-    }
+-
+-    if (http_req.headers["content-type"].includes(";") == true) {
+       try {
+-        prim.ty = parseInt(
+-          http_req.headers["content-type"].split(";")[1].split("=")[1]
+-        );
++        const tyParam = contentType
++          .split(";")
++          .map((part) => part.trim())
++          .find((part) => part.startsWith("ty="));
++        if (tyParam) {
++          prim.ty = Number.parseInt(tyParam.split("=")[1], 10);
++        }
+       } catch (err) {
+-        logger.warn({ err, contentType: http_req.headers["content-type"] }, 'failed to parse resource type from Content-Type');
++        logger.warn({ err, contentType }, "failed to parse resource type from Content-Type");
+       }
+-    }
+-  } else {
+-    if (http_req.method == "GET") {
+-      prim.op = 2;
+-    } else if (http_req.method == "DELETE") {
+-      prim.op = 4;
+     } else {
+-      logger.warn({ method: http_req.method, url: http_req.url }, 'op param could not be resolved');
++      prim.op = 5;
+     }
++  } else {
++    logger.warn({ method: http_req.method, url: http_req.url }, "op param could not be resolved");
+   }
+ 
+   query = http_req.query;
+diff --git a/config/default.json b/config/default.json
+index 3813b35..d7746a5 100644
+--- a/config/default.json
++++ b/config/default.json
+@@ -2,15 +2,15 @@
+   "cse": {
+     "cse_type": 1,
+     "sp_id": "//mydomain.io",
+-    "cse_id": "/Mobius4",
+-    "csebase_rn": "Mobius",
++    "cse_id": "/incse",
++    "csebase_rn": "incse",
+     "poa": [
+       "http://192.168.0.236:7599"
+     ],
+     "registrar": {  
+       "cse_type": 1,
+-      "cse_id": "/Mobius2",
+-      "csebase_rn": "Mobius",
++      "cse_id": "/incse",
++      "csebase_rn": "incse",
+       "ip": "localhost",
+       "port": 7579,
+       "versions": [
+@@ -82,11 +82,13 @@
+     }
+   },
+   "db": {
+-    "user": "",
++    "user": "sm",
+     "host": "localhost",
+-    "name": "mobius4",
+-    "pw": "",
+-    "port": 5432
++    "name": "mobiusdb_in",
++    "pw": "keti1234",
++    "port": 5432,
++    "connect_timeout_ms": 10000,
++    "idle_timeout_ms": 30000
+   },
+   "length": {
+     "timestamp": 20,
+diff --git a/config/local.json.example b/config/local.json.example
+deleted file mode 100644
+index 104c746..0000000
+--- a/config/local.json.example
++++ /dev/null
+@@ -1,24 +0,0 @@
+-{
+-  "_comment": "Copy this file to config/local.json and fill in your local values. local.json is gitignored and always takes priority over default.json.",
+-  "db": {
+-    "user": "your_db_user",
+-    "pw": "your_db_password"
+-  },
+-  "logging": {
+-    "level": "debug",
+-    "console": {
+-      "pretty": true
+-    },
+-    "file": {
+-      "enabled": false
+-    }
+-  },
+-  "security": {
+-    "helmet": {
+-      "enabled": false
+-    },
+-    "rateLimit": {
+-      "enabled": false
+-    }
+-  }
+-}
+diff --git a/cse/hostingCSE.js b/cse/hostingCSE.js
+index 055efb8..8f56a08 100644
+--- a/cse/hostingCSE.js
++++ b/cse/hostingCSE.js
+@@ -79,8 +79,18 @@ async function create_a_lookup_record(ty, rn, sid, ri, pi, cr, int_cr, loc) {
+ 
+ async function create_a_res(req_prim, resp_prim) {
+ 	const ty = req_prim.ty;
++	if (!req_prim.pc || typeof req_prim.pc !== 'object' || Array.isArray(req_prim.pc)) {
++		resp_prim.rsc = enums.rsc_str['BAD_REQUEST'];
++		resp_prim.pc = { 'm2m:dbg': 'missing or invalid primitive content (pc)' };
++		return;
++	}
+ 	const obj_key = Object.keys(req_prim.pc)[0];
+ 	const res_rep = req_prim.pc[obj_key];
++	if (!obj_key || !res_rep || typeof res_rep !== 'object') {
++		resp_prim.rsc = enums.rsc_str['BAD_REQUEST'];
++		resp_prim.pc = { 'm2m:dbg': 'invalid resource representation in primitive content (pc)' };
++		return;
++	}
+ 
+ 	// request validity check
+ 
+@@ -447,10 +457,21 @@ async function aggr_reses_per_ty(req_prim, ri_list, ty) {
+ 
+ async function update_a_res(req_prim, resp_prim) {
+ 	// request validity check
++	if (!req_prim.pc || typeof req_prim.pc !== 'object' || Array.isArray(req_prim.pc)) {
++		resp_prim.rsc = enums.rsc_str['BAD_REQUEST'];
++		resp_prim.pc = { 'm2m:dbg': 'missing or invalid primitive content (pc)' };
++		return;
++	}
+ 
+ 	// 'et' validation
+ 	const obj_key = Object.keys(req_prim.pc)[0];
+-	const et = req_prim.pc[obj_key].et || null;
++	const res_rep = req_prim.pc[obj_key];
++	if (!obj_key || !res_rep || typeof res_rep !== 'object') {
++		resp_prim.rsc = enums.rsc_str['BAD_REQUEST'];
++		resp_prim.pc = { 'm2m:dbg': 'invalid resource representation in primitive content (pc)' };
++		return;
++	}
++	const et = res_rep.et || null;
+ 	const timestamp_format = config.get('cse.timestamp_format');
+ 	const now = moment().utc().format(timestamp_format);
+ 	if (et && et <= now) {
+diff --git a/db/connection.js b/db/connection.js
+index a02147e..2b0b232 100644
+--- a/db/connection.js
++++ b/db/connection.js
+@@ -8,6 +8,8 @@ const pool = new Pool({
+     database: config.get('db.name'),
+     password: config.get('db.pw'),
+     port: config.get('db.port'),
++    connectionTimeoutMillis: config.has('db.connect_timeout_ms') ? config.get('db.connect_timeout_ms') : 10000,
++    idleTimeoutMillis: config.has('db.idle_timeout_ms') ? config.get('db.idle_timeout_ms') : 30000,
+ });
+ 
+ module.exports = pool;
+\ No newline at end of file
+diff --git a/db/init.js b/db/init.js
+index fd6b1d9..760a8c7 100644
+--- a/db/init.js
++++ b/db/init.js
+@@ -29,6 +29,8 @@ const pool = new Pool({
+     database: config.get('db.name'),
+     password: config.get('db.pw'),
+     port: config.get('db.port'),
++    connectionTimeoutMillis: config.has('db.connect_timeout_ms') ? config.get('db.connect_timeout_ms') : 10000,
++    idleTimeoutMillis: config.has('db.idle_timeout_ms') ? config.get('db.idle_timeout_ms') : 30000,
+ });
+ 
+ // Test PostgreSQL connection
+diff --git a/mobius4.js b/mobius4.js
+index 1a64c6e..58ef89d 100644
+--- a/mobius4.js
++++ b/mobius4.js
+@@ -11,6 +11,24 @@ const config = require('config');
+ 
+ let cleanupIntervalId;
+ 
++function fatalAndExit(message, err) {
++    logger.fatal({ err }, message);
++
++    // pino transport can be async; also print to stderr so startup failures are always visible.
++    const details = err && err.message ? `: ${err.message}` : '';
++    console.error(`[mobius4] ${message}${details}`);
++
++    try {
++        if (typeof logger.flush === 'function') {
++            logger.flush();
++        }
++    } catch (_) {
++        // Best effort only.
++    }
++
++    process.exit(1);
++}
++
+ async function main() {
+     logger.info('mobius4 starting up');
+ 
+@@ -18,8 +36,7 @@ async function main() {
+     try {
+         await db.init_db();
+     } catch (err) {
+-        logger.fatal({ err }, 'database initialization failed, shutting down');
+-        process.exit(1);
++        fatalAndExit('database initialization failed, shutting down', err);
+     }
+ 
+     // start http server
+@@ -41,9 +58,13 @@ async function main() {
+     logger.info({ intervalDays: config.cse.expired_resource_cleanup_interval_days }, 'expired resource cleanup scheduled');
+ }
+ 
+-main().then(() => {
+-    if (process.send) process.send('ready'); // PM2 wait_ready 연동
+-});
++main()
++    .then(() => {
++        if (process.send) process.send('ready'); // PM2 wait_ready 연동
++    })
++    .catch((err) => {
++        fatalAndExit('unhandled startup error', err);
++    });
+ 
+ // graceful shutdown
+ async function shutdown(signal) {
+diff --git a/package-lock.json b/package-lock.json
+index 60de1c8..55e38ae 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -13,7 +13,7 @@
+         "axios": "^0.19.0",
+         "base-64": "^1.0.0",
+         "bson-objectid": "^1.3.0",
+-        "config": "^1.30.0",
++        "config": "^4.4.1",
+         "cors": "^2.8.5",
+         "debug": "^3.1.0",
+         "dotenv": "^16.5.0",
+@@ -468,15 +468,15 @@
+       }
+     },
+     "node_modules/config": {
+-      "version": "1.31.0",
+-      "resolved": "https://registry.npmjs.org/config/-/config-1.31.0.tgz",
+-      "integrity": "sha512-Ep/l9Rd1J9IPueztJfpbOqVzuKHQh4ZODMNt9xqTYdBBNRXbV4oTu34kCkkfdRVcDq0ohtpaeXGgb+c0LQxFRA==",
++      "version": "4.4.1",
++      "resolved": "https://registry.npmjs.org/config/-/config-4.4.1.tgz",
++      "integrity": "sha512-XfN4Q4+wBKkGtgMyQ+5ayjepdb0MrdiGKfBr0G1PTLx9rnqsX+Xiw03LEUtSALZU0UVfcFp6+xYV0NL8HLF94g==",
+       "license": "MIT",
+       "dependencies": {
+-        "json5": "^1.0.1"
++        "json5": "^2.2.3"
+       },
+       "engines": {
+-        "node": ">= 4.0.0"
++        "node": ">= 20.0.0"
+       }
+     },
+     "node_modules/content-disposition": {
+@@ -1368,15 +1368,15 @@
+       }
+     },
+     "node_modules/json5": {
+-      "version": "1.0.2",
+-      "resolved": "https://registry.npmjs.org/json5/-/json5-1.0.2.tgz",
+-      "integrity": "sha512-g1MWMLBiz8FKi1e4w0UyVL3w+iJceWAFBAaBnnGKOpNa5f8TLktkbre1+s6oICydWAm+HRUGTmI+//xv2hvXYA==",
++      "version": "2.2.3",
++      "resolved": "https://registry.npmjs.org/json5/-/json5-2.2.3.tgz",
++      "integrity": "sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==",
+       "license": "MIT",
+-      "dependencies": {
+-        "minimist": "^1.2.0"
+-      },
+       "bin": {
+         "json5": "lib/cli.js"
++      },
++      "engines": {
++        "node": ">=6"
+       }
+     },
+     "node_modules/jsonpath-plus": {
+diff --git a/package.json b/package.json
+index 3de1bba..b3df8c6 100644
+--- a/package.json
++++ b/package.json
+@@ -8,7 +8,7 @@
+     "axios": "^0.19.0",
+     "base-64": "^1.0.0",
+     "bson-objectid": "^1.3.0",
+-    "config": "^1.30.0",
++    "config": "^4.4.1",
+     "cors": "^2.8.5",
+     "debug": "^3.1.0",
+     "dotenv": "^16.5.0",

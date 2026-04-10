@@ -2,15 +2,15 @@
   "cse": {
     "cse_type": 1,
     "sp_id": "//mydomain.io",
-    "cse_id": "/Mobius4",
-    "csebase_rn": "Mobius",
+    "cse_id": "/incse",
+    "csebase_rn": "incse",
     "poa": [
       "http://192.168.0.236:7599"
     ],
     "registrar": {  
       "cse_type": 1,
-      "cse_id": "/Mobius2",
-      "csebase_rn": "Mobius",
+      "cse_id": "/incse",
+      "csebase_rn": "incse",
       "ip": "localhost",
       "port": 7579,
       "versions": [
@@ -82,11 +82,13 @@
     }
   },
   "db": {
-    "user": "",
+    "user": "sm",
     "host": "localhost",
-    "name": "mobius4",
-    "pw": "",
-    "port": 5432
+    "name": "mobiusdb_in",
+    "pw": "keti1234",
+    "port": 5432,
+    "connect_timeout_ms": 10000,
+    "idle_timeout_ms": 30000
   },
   "length": {
     "timestamp": 20,

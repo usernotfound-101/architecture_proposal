@@ -29,6 +29,8 @@ const pool = new Pool({
     database: config.get('db.name'),
     password: config.get('db.pw'),
     port: config.get('db.port'),
+    connectionTimeoutMillis: config.has('db.connect_timeout_ms') ? config.get('db.connect_timeout_ms') : 10000,
+    idleTimeoutMillis: config.has('db.idle_timeout_ms') ? config.get('db.idle_timeout_ms') : 30000,
 });
 
 // Test PostgreSQL connection

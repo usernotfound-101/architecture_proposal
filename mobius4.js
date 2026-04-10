@@ -11,6 +11,24 @@ const config = require('config');
 
 let cleanupIntervalId;
 
+function fatalAndExit(message, err) {
+    logger.fatal({ err }, message);
+
+    // pino transport can be async; also print to stderr so startup failures are always visible.
+    const details = err && err.message ? `: ${err.message}` : '';
+    console.error(`[mobius4] ${message}${details}`);
+
+    try {
+        if (typeof logger.flush === 'function') {
+            logger.flush();
+        }
+    } catch (_) {
+        // Best effort only.
+    }
+
+    process.exit(1);
+}
+
 async function main() {
     logger.info('mobius4 starting up');
 
@@ -18,8 +36,7 @@ async function main() {
     try {
         await db.init_db();
     } catch (err) {
-        logger.fatal({ err }, 'database initialization failed, shutting down');
-        process.exit(1);
+        fatalAndExit('database initialization failed, shutting down', err);
     }
 
     // start http server
@@ -41,9 +58,13 @@ async function main() {
     logger.info({ intervalDays: config.cse.expired_resource_cleanup_interval_days }, 'expired resource cleanup scheduled');
 }
 
-main().then(() => {
-    if (process.send) process.send('ready'); // PM2 wait_ready 연동
-});
+main()
+    .then(() => {
+        if (process.send) process.send('ready'); // PM2 wait_ready 연동
+    })
+    .catch((err) => {
+        fatalAndExit('unhandled startup error', err);
+    });
 
 // graceful shutdown
 async function shutdown(signal) {
