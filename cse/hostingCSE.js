@@ -79,8 +79,18 @@ async function create_a_lookup_record(ty, rn, sid, ri, pi, cr, int_cr, loc) {
 
 async function create_a_res(req_prim, resp_prim) {
 	const ty = req_prim.ty;
+	if (!req_prim.pc || typeof req_prim.pc !== 'object' || Array.isArray(req_prim.pc)) {
+		resp_prim.rsc = enums.rsc_str['BAD_REQUEST'];
+		resp_prim.pc = { 'm2m:dbg': 'missing or invalid primitive content (pc)' };
+		return;
+	}
 	const obj_key = Object.keys(req_prim.pc)[0];
 	const res_rep = req_prim.pc[obj_key];
+	if (!obj_key || !res_rep || typeof res_rep !== 'object') {
+		resp_prim.rsc = enums.rsc_str['BAD_REQUEST'];
+		resp_prim.pc = { 'm2m:dbg': 'invalid resource representation in primitive content (pc)' };
+		return;
+	}
 
 	// request validity check
 
@@ -447,10 +457,21 @@ async function aggr_reses_per_ty(req_prim, ri_list, ty) {
 
 async function update_a_res(req_prim, resp_prim) {
 	// request validity check
+	if (!req_prim.pc || typeof req_prim.pc !== 'object' || Array.isArray(req_prim.pc)) {
+		resp_prim.rsc = enums.rsc_str['BAD_REQUEST'];
+		resp_prim.pc = { 'm2m:dbg': 'missing or invalid primitive content (pc)' };
+		return;
+	}
 
 	// 'et' validation
 	const obj_key = Object.keys(req_prim.pc)[0];
-	const et = req_prim.pc[obj_key].et || null;
+	const res_rep = req_prim.pc[obj_key];
+	if (!obj_key || !res_rep || typeof res_rep !== 'object') {
+		resp_prim.rsc = enums.rsc_str['BAD_REQUEST'];
+		resp_prim.pc = { 'm2m:dbg': 'invalid resource representation in primitive content (pc)' };
+		return;
+	}
+	const et = res_rep.et || null;
 	const timestamp_format = config.get('cse.timestamp_format');
 	const now = moment().utc().format(timestamp_format);
 	if (et && et <= now) {
@@ -1077,6 +1098,10 @@ async function get_ty_from_unstructuredID(ri) {
 }
 
 async function get_structuredID(to) {
+	if (to == null) {
+		return null;
+	}
+
 	// if 'to' is already a structuredID, then return it immediately
 	if (true == to.includes("/")) {
 		return to;
@@ -1089,7 +1114,10 @@ async function get_structuredID(to) {
 
 	// in other cases, 'to' is 'ri'
 	try {
-		result = await Lookup.findOne({ where: { ri: to } });
+		const result = await Lookup.findOne({ where: { ri: to } });
+		if (!result) {
+			return null;
+		}
 		return result.sid;
 	} catch (err) {
 		logger.error({ err }, 'get_structuredID failed');
@@ -1099,6 +1127,10 @@ async function get_structuredID(to) {
 }
 
 async function get_unstructuredID(to) {
+	if (to == null) {
+		return null;
+	}
+
 	// if 'to' is the csebase_rn or a structuredID, then return the 'ri' from the lookup table
 	if (config.cse.csebase_rn == to || to.includes("/")) {
 		try {
@@ -1201,7 +1233,18 @@ async function access_decision(req_prim, resp_prim) {
 		return false;
 	}
 
+	if (!temp_resp.pc || typeof temp_resp.pc !== 'object') {
+		resp_prim.rsc = temp_resp.rsc || enums.rsc_str['NOT_FOUND'];
+		resp_prim.pc = temp_resp.pc || { 'm2m:dbg': 'target resource does not exist' };
+		return false;
+	}
+
 	const obj_key = Object.keys(temp_resp.pc)[0];
+	if (!obj_key || !temp_resp.pc[obj_key]) {
+		resp_prim.rsc = enums.rsc_str['NOT_FOUND'];
+		resp_prim.pc = { 'm2m:dbg': 'target resource does not exist' };
+		return false;
+	}
 	const ty = temp_resp.pc[obj_key].ty;
 	const ty_str = enums.ty_str[ty];
 	const acpi = JSONPath("$..acpi", temp_resp)[0];
