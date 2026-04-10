@@ -16,6 +16,8 @@ const AE = require('../models/ae-model');
 const CIN = require('../models/cin-model');
 const CNT = require('../models/cnt-model');
 const CSR = require('../models/csr-model');
+const MGO = require('../models/mgo-model');
+const NOD = require('../models/nod-model');
 // const FLX = require('../models/flx-model');
 const GRP = require('../models/grp-model');
 const SUB = require('../models/sub-model');
@@ -38,6 +40,8 @@ const csr = require("./resources/csr");
 const cnt = require("./resources/cnt");
 const cin = require("./resources/cin");
 const grp = require("./resources/grp");
+const mgo = require("./resources/mgo");
+const nod = require("./resources/node");
 const sub = require("./resources/sub");
 // const smd = require("./resources/smd");
 // const flx = require("./resources/flx");
@@ -79,8 +83,18 @@ async function create_a_lookup_record(ty, rn, sid, ri, pi, cr, int_cr, loc) {
 
 async function create_a_res(req_prim, resp_prim) {
 	const ty = req_prim.ty;
+	if (!req_prim.pc || typeof req_prim.pc !== 'object' || Array.isArray(req_prim.pc)) {
+		resp_prim.rsc = enums.rsc_str['BAD_REQUEST'];
+		resp_prim.pc = { 'm2m:dbg': 'missing or invalid primitive content (pc)' };
+		return;
+	}
 	const obj_key = Object.keys(req_prim.pc)[0];
 	const res_rep = req_prim.pc[obj_key];
+	if (!obj_key || !res_rep || typeof res_rep !== 'object') {
+		resp_prim.rsc = enums.rsc_str['BAD_REQUEST'];
+		resp_prim.pc = { 'm2m:dbg': 'invalid resource representation in primitive content (pc)' };
+		return;
+	}
 
 	// request validity check
 
@@ -129,6 +143,12 @@ async function create_a_res(req_prim, resp_prim) {
 		case 9:
 			await grp.create_a_grp(req_prim, resp_prim);
 			break;
+			case 13:
+				await mgo.create_a_mgo(req_prim, resp_prim);
+				break;
+			case 14:
+				await nod.create_a_nod(req_prim, resp_prim);
+				break;
 		case 16:
 			await csr.create_a_csr(req_prim, resp_prim);
 			break;
@@ -226,6 +246,12 @@ async function retrieve_a_res(req_prim, resp_prim) {
 			break;
 		case 9:
 			await grp.retrieve_a_grp(req_prim, resp_prim);
+			break;
+		case 13:
+			await mgo.retrieve_a_mgo(req_prim, resp_prim);
+			break;
+		case 14:
+			await nod.retrieve_a_nod(req_prim, resp_prim);
 			break;
 		case 16:
 			await csr.retrieve_a_csr(req_prim, resp_prim);
@@ -337,6 +363,16 @@ async function rcn48_retrieve(req_prim, resp_prim) {
 				if (temp_reses.length)
 					aggr_res[res_key]["m2m:grp"] = [...temp_reses];
 			}
+			if ("mgo" === ty_str) {
+				temp_reses = await aggr_reses_per_ty(req_prim, ri_list, "mgo");
+				if (temp_reses.length)
+					aggr_res[res_key]["m2m:mgo"] = [...temp_reses];
+			}
+			if ("nod" === ty_str) {
+				temp_reses = await aggr_reses_per_ty(req_prim, ri_list, "nod");
+				if (temp_reses.length)
+					aggr_res[res_key]["m2m:nod"] = [...temp_reses];
+			}
 			if ("sub" === ty_str) {
 				temp_reses = await aggr_reses_per_ty(req_prim, ri_list, "sub");
 				if (temp_reses.length)
@@ -417,6 +453,12 @@ async function aggr_reses_per_ty(req_prim, ri_list, ty) {
 				case "grp":
 					await grp.retrieve_a_grp(tmp_req_prim, tmp_resp_prim);
 					return tmp_resp_prim.pc["m2m:grp"];
+				case "mgo":
+					await mgo.retrieve_a_mgo(tmp_req_prim, tmp_resp_prim);
+					return tmp_resp_prim.pc["m2m:mgo"];
+				case "nod":
+					await nod.retrieve_a_nod(tmp_req_prim, tmp_resp_prim);
+					return tmp_resp_prim.pc["m2m:nod"];
 				case "sub":
 					await sub.retrieve_a_sub(tmp_req_prim, tmp_resp_prim);
 					return tmp_resp_prim.pc["m2m:sub"];
@@ -447,10 +489,21 @@ async function aggr_reses_per_ty(req_prim, ri_list, ty) {
 
 async function update_a_res(req_prim, resp_prim) {
 	// request validity check
+	if (!req_prim.pc || typeof req_prim.pc !== 'object' || Array.isArray(req_prim.pc)) {
+		resp_prim.rsc = enums.rsc_str['BAD_REQUEST'];
+		resp_prim.pc = { 'm2m:dbg': 'missing or invalid primitive content (pc)' };
+		return;
+	}
 
 	// 'et' validation
 	const obj_key = Object.keys(req_prim.pc)[0];
-	const et = req_prim.pc[obj_key].et || null;
+	const res_rep = req_prim.pc[obj_key];
+	if (!obj_key || !res_rep || typeof res_rep !== 'object') {
+		resp_prim.rsc = enums.rsc_str['BAD_REQUEST'];
+		resp_prim.pc = { 'm2m:dbg': 'invalid resource representation in primitive content (pc)' };
+		return;
+	}
+	const et = res_rep.et || null;
 	const timestamp_format = config.get('cse.timestamp_format');
 	const now = moment().utc().format(timestamp_format);
 	if (et && et <= now) {
@@ -471,6 +524,12 @@ async function update_a_res(req_prim, resp_prim) {
 			break;
 		case 9:
 			await grp.update_a_grp(req_prim, resp_prim);
+			break;
+		case 13:
+			await mgo.update_a_mgo(req_prim, resp_prim);
+			break;
+		case 14:
+			await nod.update_a_nod(req_prim, resp_prim);
 			break;
 		case 16:
 			await csr.update_a_csr(req_prim, resp_prim);
@@ -617,6 +676,12 @@ async function delete_resources(res_list) {
 				case 9:
 					await GRP.destroy({ where: { ri: res.ri } });
 					break;
+					case 13:
+						await MGO.destroy({ where: { ri: res.ri } });
+						break;
+					case 14:
+						await NOD.destroy({ where: { ri: res.ri } });
+						break;
 				case 16:
 					await CSR.destroy({ where: { ri: res.ri } });
 					break;
@@ -716,6 +781,26 @@ async function discovery_core(req_prim) {
 		}
 		if (9 === ty && !has_geo_query) {
 			temp_list = await GRP.findAll({
+				where: where,
+				attributes: ['sid', 'ri', 'ty'],
+				limit: lim,
+			});
+			ids_list = ids_list.concat(temp_list.map(row => ({ sid: row.sid, ri: row.ri, ty: row.ty })));
+			ids_list_per_ty[enums.ty_str[ty.toString()]] = ids_list;
+			continue;
+		}
+		if (13 === ty) {
+			temp_list = await MGO.findAll({
+				where: where,
+				attributes: ['sid', 'ri', 'ty'],
+				limit: lim,
+			});
+			ids_list = ids_list.concat(temp_list.map(row => ({ sid: row.sid, ri: row.ri, ty: row.ty })));
+			ids_list_per_ty[enums.ty_str[ty.toString()]] = ids_list;
+			continue;
+		}
+		if (14 === ty) {
+			temp_list = await NOD.findAll({
 				where: where,
 				attributes: ['sid', 'ri', 'ty'],
 				limit: lim,
@@ -1077,6 +1162,10 @@ async function get_ty_from_unstructuredID(ri) {
 }
 
 async function get_structuredID(to) {
+	if (to == null) {
+		return null;
+	}
+
 	// if 'to' is already a structuredID, then return it immediately
 	if (true == to.includes("/")) {
 		return to;
@@ -1089,7 +1178,10 @@ async function get_structuredID(to) {
 
 	// in other cases, 'to' is 'ri'
 	try {
-		result = await Lookup.findOne({ where: { ri: to } });
+		const result = await Lookup.findOne({ where: { ri: to } });
+		if (!result) {
+			return null;
+		}
 		return result.sid;
 	} catch (err) {
 		logger.error({ err }, 'get_structuredID failed');
@@ -1099,6 +1191,10 @@ async function get_structuredID(to) {
 }
 
 async function get_unstructuredID(to) {
+	if (to == null) {
+		return null;
+	}
+
 	// if 'to' is the csebase_rn or a structuredID, then return the 'ri' from the lookup table
 	if (config.cse.csebase_rn == to || to.includes("/")) {
 		try {
@@ -1201,7 +1297,18 @@ async function access_decision(req_prim, resp_prim) {
 		return false;
 	}
 
+	if (!temp_resp.pc || typeof temp_resp.pc !== 'object') {
+		resp_prim.rsc = temp_resp.rsc || enums.rsc_str['NOT_FOUND'];
+		resp_prim.pc = temp_resp.pc || { 'm2m:dbg': 'target resource does not exist' };
+		return false;
+	}
+
 	const obj_key = Object.keys(temp_resp.pc)[0];
+	if (!obj_key || !temp_resp.pc[obj_key]) {
+		resp_prim.rsc = enums.rsc_str['NOT_FOUND'];
+		resp_prim.pc = { 'm2m:dbg': 'target resource does not exist' };
+		return false;
+	}
 	const ty = temp_resp.pc[obj_key].ty;
 	const ty_str = enums.ty_str[ty];
 	const acpi = JSONPath("$..acpi", temp_resp)[0];
