@@ -15,7 +15,7 @@ with open('nodesdata.json') as f:
 with open('ri.json') as f:
     ri = json.load(f)
 
-MAIN_URL = 'http://10.3.1.117:8002'
+MAIN_URL = 'http://10.2.16.116:7599'
 
 all_nodes = []
 for node_type, node_names in nodes.items():
@@ -42,6 +42,7 @@ class StepLoadShape(LoadTestShape):
 
 
 class MyUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = between(1, 1)
 
     @task
@@ -68,7 +69,7 @@ class MyUser(HttpUser):
             'Accept': 'application/json',
             'X-M2M-Origin': 'CAdmin' + 'AE-' + node_type,
             'X-M2M-RI': '123',
-            'X-M2M-RVI': '3'
+            'X-M2M-RVI': '4'
         }
 
         data = {
@@ -80,7 +81,7 @@ class MyUser(HttpUser):
         }
 
         url = MAIN_URL + '/' + ri['AE-' + node_type]['nodes'][item]['nodes']['Data']['ri']
-        # url = f"http://10.3.1.117:8200/~/in-cse/in-name/AE-{node_type}/{item}/Data/la"
+        # url = f"http://10.2.16.116:7603/mn-cse-tenant-c/AE-{node_type.upper()}/{item}/Data/la"
         # self.client.get(url, headers=headers)
         self.client.post(url, headers=headers, json=data)
 

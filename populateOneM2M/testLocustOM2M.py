@@ -9,7 +9,7 @@ with open('nodesdata.json') as f:
     nodesdata = json.load(f)
 
 
-MAIN_URL = 'http://10.3.1.117:8200/~/in-cse/in-name'
+MAIN_URL = 'http://localhost:7603/mn-cse-tenant-c'
 
 AQNodes = list(nodes['AE-AQ'])
 SRNodes = list(nodes['AE-SR'])
@@ -33,6 +33,7 @@ class StepLoadShape(LoadTestShape):
 
 # 1 min 3 reqs
 class AQUser(HttpUser):
+    host = 'http://localhost'
     wait_time = constant(60)
     fixed_count = len(AQNodes)
 
@@ -47,7 +48,7 @@ class AQUser(HttpUser):
         }
         self.url = MAIN_URL + '/AE-AQ/' + self.node + '/Data'
         self.headers = {
-            'X-M2M-Origin': 'admin:admin',
+            'X-M2M-Origin': 'SM',
             'Content-Type': 'application/json;ty=4'
         }
 
@@ -58,6 +59,7 @@ class AQUser(HttpUser):
 
 # 1 min 1 req     
 class SRUser(HttpUser):
+    host = 'http://localhost'
     wait_time = constant(60)
     fixed_count = len(SRNodes)
 
@@ -72,7 +74,7 @@ class SRUser(HttpUser):
         }
         self.url = MAIN_URL + '/AE-SR/' + self.node + '/Data'
         self.headers = {
-            'X-M2M-Origin': 'admin:admin',
+            'X-M2M-Origin': 'SM',
             'Content-Type': 'application/json;ty=4'
         }
 
@@ -82,6 +84,7 @@ class SRUser(HttpUser):
     
 # 1 min 1 req
 class EMUser(HttpUser):
+    host = 'http://localhost'
     wait_time = constant(60)
     fixed_count = len(EMNodes)
 
@@ -96,7 +99,7 @@ class EMUser(HttpUser):
         }
         self.url = MAIN_URL + '/AE-EM/' + self.node + '/Data'
         self.headers = {
-            'X-M2M-Origin': 'admin:admin',
+            'X-M2M-Origin': 'SM',
             'Content-Type': 'application/json;ty=4'
         }
 
@@ -106,6 +109,7 @@ class EMUser(HttpUser):
 
 # 2 min 1 req (actually 4 hours but 2 min for testing)
 class WMUser(HttpUser):
+    host = 'http://localhost'
     wait_time = constant(120) # 2 min
     fixed_count = len(WMNodes)
 
@@ -120,7 +124,7 @@ class WMUser(HttpUser):
         }
         self.url = MAIN_URL + '/AE-WM/' + self.node + '/Data'
         self.headers = {
-            'X-M2M-Origin': 'admin:admin',
+            'X-M2M-Origin': 'SM',
             'Content-Type': 'application/json;ty=4'
         }
 
@@ -130,6 +134,7 @@ class WMUser(HttpUser):
 
 # 1 min 1 req
 class SLUser(HttpUser):
+    host = 'http://localhost'
     wait_time = constant(60)
     fixed_count = len(SLNodes)
 
@@ -144,7 +149,7 @@ class SLUser(HttpUser):
         }
         self.url = MAIN_URL + '/AE-SL/' + self.node + '/Data'
         self.headers = {
-            'X-M2M-Origin': 'admin:admin',
+            'X-M2M-Origin': 'SM',
             'Content-Type': 'application/json;ty=4'
         }
 
@@ -154,6 +159,7 @@ class SLUser(HttpUser):
 
 # 1 min 1 req
 class CMUser(HttpUser):
+    host = 'http://localhost'
     wait_time = constant(60)
     fixed_count = len(CMNodes)
 
@@ -168,7 +174,7 @@ class CMUser(HttpUser):
         }
         self.url = MAIN_URL + '/AE-CM/' + self.node + '/Data'
         self.headers = {
-            'X-M2M-Origin': 'admin:admin',
+            'X-M2M-Origin': 'SM',
             'Content-Type': 'application/json;ty=4'
         }
 
@@ -178,6 +184,7 @@ class CMUser(HttpUser):
     
 # 22 min 1 req
 class WNUser(HttpUser):
+    host = 'http://localhost'
     wait_time = constant(1320) # 22 min
     fixed_count = len(WNNodes)
 
@@ -192,7 +199,7 @@ class WNUser(HttpUser):
         }
         self.url = MAIN_URL + '/AE-WN/' + self.node + '/Data'
         self.headers = {
-            'X-M2M-Origin': 'admin:admin',
+            'X-M2M-Origin': 'SM',
             'Content-Type': 'application/json;ty=4'
         }
     
@@ -202,6 +209,7 @@ class WNUser(HttpUser):
 
 # 10 sec 1 req
 class WEUser(HttpUser):
+    host = 'http://localhost'
     wait_time = constant(10)
     fixed_count = len(WENodes)
 
@@ -216,7 +224,7 @@ class WEUser(HttpUser):
         }
         self.url = MAIN_URL + '/AE-WE/' + self.node + '/Data'
         self.headers = {
-            'X-M2M-Origin': 'admin:admin',
+            'X-M2M-Origin': 'SM',
             'Content-Type': 'application/json;ty=4'
         }
     

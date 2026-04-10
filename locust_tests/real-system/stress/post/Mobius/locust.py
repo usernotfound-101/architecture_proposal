@@ -17,7 +17,7 @@ all_nodes = []
 for node_type, node_names in nodes.items():
     all_nodes.extend(node_names)
 
-MAIN_URL = 'http://10.3.1.117:8001/Mobius'
+MAIN_URL = 'http://10.2.16.116:7601/mn-cse-tenant-a'
 
 users_waiting = 0
 event = gevent.event.Event()
@@ -39,6 +39,7 @@ class StepLoadShape(LoadTestShape):
         return (current_step * self.step_load, self.spawn_rate)
     
 class MyUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = between(1, 1)
 
     @task
@@ -62,7 +63,7 @@ class MyUser(HttpUser):
         node_type = item.split('-')[0]
         headers = {
             'X-M2M-RI': '12345',
-            'X-M2M-Origin': 'SOrigin' + item,
+            'X-M2M-Origin': 'SM',
             'Content-Type': 'application/json;ty=4'
         }
 
@@ -75,7 +76,7 @@ class MyUser(HttpUser):
         }
 
         url = MAIN_URL + '/AE-' + node_type + '/' + item + '/Data?rcn=1'
-        # url = f"http://10.3.1.117:8200/~/in-cse/in-name/AE-{node_type}/{item}/Data/la"
+        # url = f"http://10.2.16.116:7603/mn-cse-tenant-c/{node_type.upper() if node_type.upper().startswith('AE-') else 'AE-' + node_type.upper()}/{item}/Data/la"
         # self.client.get(url, headers=headers)
         self.client.post(url, headers=headers, json=data)
 

@@ -26,6 +26,7 @@ class StepLoadShape(LoadTestShape):
         return (current_step * self.step_load, self.spawn_rate)
 
 class MyUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = between(1, 15)
     nodes_data = None
 
@@ -50,10 +51,10 @@ class MyUser(HttpUser):
         node_type, item = random.choice(self.all_nodes)
         headers = {
             'X-M2M-RI': '12345',
-            'X-M2M-Origin': 'SOrigin' + item,
+            'X-M2M-Origin': 'SM',
             'Content-Type': 'application/json;ty=4'
         }
-        url = f"http://10.3.1.117:8001/Mobius/{node_type}/{item}/Data?rcn=1"
+        url = f"http://10.2.16.116:7601/mn-cse-tenant-a/{node_type.upper() if node_type.upper().startswith('AE-') else 'AE-' + node_type.upper()}/{item}/Data?rcn=1"
         
         
         # Create the payload data for the POST request

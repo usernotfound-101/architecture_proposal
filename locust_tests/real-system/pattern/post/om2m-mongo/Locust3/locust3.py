@@ -9,7 +9,7 @@ from locust import events
 from datetime import datetime
 
 HEADER = {
-    'X-M2M-Origin': 'admin:admin',
+    'X-M2M-Origin': 'SM',
     'Content-Type': 'application/json;ty=4;charset=utf-8'
 }
 
@@ -44,6 +44,7 @@ event = gevent.event.Event()
 lock = Semaphore()
 
 class MyUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = between(1, 1)
     nodes_data = None
 
@@ -83,7 +84,7 @@ class MyUser(HttpUser):
 
             item = random.choice(self.all_nodes)
             node_type = item.split('-')[0]
-            url = f"http://10.3.1.117:8200/~/in-cse/in-name/AE-{node_type}/{item}/Data"
+            url = f"http://10.2.16.116:7603/mn-cse-tenant-c/AE-{node_type.upper()}/{item}/Data"
 
             # Create the payload data for the POST request
             payload = {

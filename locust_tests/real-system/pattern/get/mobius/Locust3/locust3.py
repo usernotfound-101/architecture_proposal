@@ -3,16 +3,23 @@ import random
 import gevent
 import time
 import math
+import uuid
 from locust import HttpUser, task, between, LoadTestShape
 from gevent.lock import Semaphore
 from locust import events
 from datetime import datetime
 
-HEADER = {
-    'X-M2M-Origin': 'SOrigin',
-    'X-M2M-RI': '12345',
-    'Content-Type': 'application/json;ty=4;charset=utf-8'
+BASE_HEADERS = {
+    'X-M2M-Origin': 'SM',
+    'X-M2M-RVI': '4',
+    'Accept': 'application/json'
 }
+
+
+def build_headers():
+    headers = BASE_HEADERS.copy()
+    headers['X-M2M-RI'] = f"rqi-{uuid.uuid4().hex}"
+    return headers
 
 class StepLoadShape(LoadTestShape):
     step_time = 60
@@ -45,6 +52,7 @@ lock = Semaphore()
 
 
 class MyUser(HttpUser):
+    host = 'http://10.2.16.116:7601'
     wait_time = between(1, 1)
     nodes_data = None
 
@@ -85,11 +93,10 @@ class MyUser(HttpUser):
             print(f"User {user_num} - Time: {current_time}")
 
             node_type, item = random.choice(self.all_nodes)
-            url = f"http://10.3.1.117:8001/Mobius/{node_type}/{item}/Data"
-            self.client.get(url, headers=HEADER)
+            url = f"/mn-cse-tenant-a/{node_type.upper() if node_type.upper().startswith('AE-') else 'AE-' + node_type.upper()}/{item}/Data"
             print(f"Sending request at: {current_time}")
 
-            self.client.get(url, headers=HEADER)
+            self.client.get(url, headers=build_headers())
 
             with lock:
                 users_waiting -= 1

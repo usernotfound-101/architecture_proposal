@@ -11,7 +11,7 @@ with open('nodesdata.json') as f:
 with open('ri.json') as f:
     ri = json.load(f)
 
-MAIN_URL = 'http://10.3.1.117:8002'
+MAIN_URL = 'http://10.2.16.116:7599'
 
 AQNodes = list(nodes['AE-AQ'])
 SRNodes = list(nodes['AE-SR'])
@@ -35,6 +35,7 @@ class StepLoadShape(LoadTestShape):
 
 # 1 min 3 reqs
 class AQUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = constant(60)
     fixed_count = len(AQNodes)
 
@@ -53,7 +54,7 @@ class AQUser(HttpUser):
             'Accept': 'application/json',
             'X-M2M-Origin': 'CAdmin' + 'AE-AQ',
             'X-M2M-RI': '123',
-            'X-M2M-RVI': '3'
+            'X-M2M-RVI': '4'
         }
 
     @task
@@ -63,6 +64,7 @@ class AQUser(HttpUser):
 
 # 1 min 1 req     
 class SRUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = constant(60)
     fixed_count = len(SRNodes)
 
@@ -81,7 +83,7 @@ class SRUser(HttpUser):
             'Accept': 'application/json',
             'X-M2M-Origin': 'CAdmin' + 'AE-SR',
             'X-M2M-RI': '123',
-            'X-M2M-RVI': '3'
+            'X-M2M-RVI': '4'
         }
             
 
@@ -91,6 +93,7 @@ class SRUser(HttpUser):
     
 # 1 min 1 req
 class EMUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = constant(60)
     fixed_count = len(EMNodes)
 
@@ -109,7 +112,7 @@ class EMUser(HttpUser):
             'Accept': 'application/json',
             'X-M2M-Origin': 'CAdmin' + 'AE-EM',
             'X-M2M-RI': '123',
-            'X-M2M-RVI': '3'
+            'X-M2M-RVI': '4'
         }
 
     @task
@@ -118,6 +121,7 @@ class EMUser(HttpUser):
 
 # 2 min 1 req (actually 4 hours but 2 min for testing)
 class WMUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = constant(120) # 2 min
     fixed_count = len(WMNodes)
 
@@ -136,7 +140,7 @@ class WMUser(HttpUser):
             'Accept': 'application/json',
             'X-M2M-Origin': 'CAdmin' + 'AE-WM', 
             'X-M2M-RI': '123',
-            'X-M2M-RVI': '3'
+            'X-M2M-RVI': '4'
         }
 
     @task
@@ -145,6 +149,7 @@ class WMUser(HttpUser):
 
 # 1 min 1 req
 class SLUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = constant(60)
     fixed_count = len(SLNodes)
 
@@ -163,7 +168,7 @@ class SLUser(HttpUser):
             'Accept': 'application/json',
             'X-M2M-Origin': 'CAdmin' + 'AE-SL',
             'X-M2M-RI': '123',
-            'X-M2M-RVI': '3'
+            'X-M2M-RVI': '4'
         }
 
     @task
@@ -172,6 +177,7 @@ class SLUser(HttpUser):
 
 # 1 min 1 req
 class CMUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = constant(60)
     fixed_count = len(CMNodes)
 
@@ -190,7 +196,7 @@ class CMUser(HttpUser):
             'Accept': 'application/json',
             'X-M2M-Origin': 'CAdmin' + 'AE-CM',
             'X-M2M-RI': '123',
-            'X-M2M-RVI': '3'
+            'X-M2M-RVI': '4'
         }
 
     @task
@@ -199,6 +205,7 @@ class CMUser(HttpUser):
     
 # 22 min 1 req
 class WNUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = constant(1320) # 22 min
     fixed_count = len(WNNodes)
 
@@ -217,7 +224,7 @@ class WNUser(HttpUser):
             'Accept': 'application/json',
             'X-M2M-Origin': 'CAdmin' + 'AE-WN',
             'X-M2M-RI': '123',
-            'X-M2M-RVI': '3'
+            'X-M2M-RVI': '4'
         }
     
     @task
@@ -226,6 +233,7 @@ class WNUser(HttpUser):
 
 # 10 sec 1 req
 class WEUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = constant(10)
     fixed_count = len(WENodes)
 
@@ -244,7 +252,7 @@ class WEUser(HttpUser):
             'Accept': 'application/json',
             'X-M2M-Origin': 'CAdmin' + 'AE-WE',
             'X-M2M-RI': '123',
-            'X-M2M-RVI': '3'
+            'X-M2M-RVI': '4'
         }
     
     @task

@@ -11,9 +11,9 @@ from datetime import datetime
 HEADER = {
     'Content-Type': 'application/json;ty=4',
     'Accept': 'application/json',
-    'X-M2M-Origin': 'Sacp-admin',
+    'X-M2M-Origin': 'SM',
     'X-M2M-RI': 'a2tzavpitws',
-    'X-M2M-RVI': '3'
+    'X-M2M-RVI': '4'
 }
 
 class StepLoadShape(LoadTestShape):
@@ -47,6 +47,7 @@ lock = Semaphore()
 
 
 class MyUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = between(1, 1)
     nodes_data = None
 
@@ -87,7 +88,7 @@ class MyUser(HttpUser):
             item = random.choice(self.all_nodes)
             node_type = item.split('-')[0]
             ri = self.nodes_data[node_type][item]
-            url = f"http://10.3.1.117:8002/" + ri
+            url = f"http://10.2.16.116:7599/" + ri
 
             # Create the payload data for the POST request
             payload = {

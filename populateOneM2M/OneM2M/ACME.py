@@ -2,9 +2,10 @@ import json
 import requests
 
 class ACME:
-    def __init__(self, url, rifile, rvi):
+    def __init__(self, url, rifile, rvi, tenant_rn='mn-cse-tenant-a'):
         self.url = url
         self.rvi = rvi
+        self.tenant_rn = tenant_rn
         # if file exists read else empty dict
         try:
             with open(rifile, 'r') as f:
@@ -32,7 +33,7 @@ class ACME:
             'X-M2M-RVI': self.rvi
         }
 
-        r = requests.post(self.url + '/in-cse', headers=headers, data = json.dumps(data))
+        r = requests.post(self.url + '/incse/' + self.tenant_rn, headers=headers, data = json.dumps(data))
         if r.status_code == 200 or r.status_code == 201 or r.status_code == 409:
             if self.ri.get(AE) is None:
                 self.ri[AE] = {}

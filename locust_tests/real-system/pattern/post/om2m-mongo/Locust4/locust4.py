@@ -7,7 +7,7 @@ from locust import HttpUser, task, between, LoadTestShape
 from gevent.lock import Semaphore
 from locust import events
 HEADER = {
-    'X-M2M-Origin': 'admin:admin',
+    'X-M2M-Origin': 'SM',
     'Content-Type': 'application/json;ty=4;charset=utf-8'
 }
 
@@ -31,6 +31,7 @@ class StepLoadShape(LoadTestShape):
         return (current_step * self.step_load, self.spawn_rate)
 
 class MyUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = between(1, 15)
     nodes_data = None
 
@@ -53,7 +54,7 @@ class MyUser(HttpUser):
 
         item = random.choice(self.all_nodes)
         node_type = item.split('-')[0]
-        url = f"http://10.3.1.117:8200/~/in-cse/in-name/AE-{node_type}/{item}/Data"
+        url = f"http://10.2.16.116:7603/mn-cse-tenant-c/AE-{node_type.upper()}/{item}/Data"
 
         # Create the payload data for the POST request
         payload = {

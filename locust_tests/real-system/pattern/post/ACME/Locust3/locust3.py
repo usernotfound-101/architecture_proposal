@@ -13,7 +13,7 @@ HEADER = {
     'Accept': 'application/json',
     'X-M2M-Origin': 'CAdmin',
     'X-M2M-RI': '123',
-    'X-M2M-RVI': '3'
+    'X-M2M-RVI': '4'
 }
 
 with open('nodesdata.json') as f:
@@ -53,6 +53,7 @@ lock = Semaphore()
 
 
 class MyUser(HttpUser):
+    host = 'http://10.2.16.116'
     wait_time = between(1, 1)
     nodes_data = None
 
@@ -93,7 +94,7 @@ class MyUser(HttpUser):
             item = random.choice(self.all_nodes)
             node_type = 'AE-' + item.split('-')[0]
             ri = ridata[node_type]['nodes'][item]['nodes']['Data']['ri']
-            url = f"http://10.3.1.117:8002/" + ri
+            url = f"http://10.2.16.116:7599/" + ri
 
             headers = HEADER
             headers['X-M2M-Origin'] = 'CAdmin' + node_type
