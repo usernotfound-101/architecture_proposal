@@ -1,18 +1,18 @@
 {
   "cse": {
-    "cse_type": 1,
+    "cse_type": 2,
     "sp_id": "//localhost",
-    "cse_id": "/Mobius4",
-    "csebase_rn": "Mobius",
+    "cse_id": "/mn-cse-tenant-a",
+    "csebase_rn": "mn-cse-tenant-a",
     "poa": [
-      "http://localhost:7599"
+      "http://localhost:7601"
     ],
     "registrar": {  
       "cse_type": 1,
-      "cse_id": "/Mobius2",
-      "csebase_rn": "Mobius",
+      "cse_id": "/incse",
+      "csebase_rn": "incse",
       "ip": "localhost",
-      "port": 7579,
+      "port": 7599,
       "versions": [
         "4",
         "3",
@@ -35,6 +35,8 @@
       4,
       5,
       9,
+      13,
+      14,
       16,
       23
     ],
@@ -63,10 +65,10 @@
     "max_body_size": "1mb"
   },
   "http": {
-    "port": 7599
+    "port": 7601
   },
   "https": {
-    "port": 7580
+    "port": 7581
   },
   "mqtt": {
     "enabled": true,
@@ -82,10 +84,10 @@
     }
   },
   "db": {
-    "user": "",
+    "user": "common",
     "host": "localhost",
-    "name": "mobius4",
-    "pw": "",
+    "name": "mobiusdb_common",
+    "pw": "keti1234",
     "port": 5432
   },
   "length": {

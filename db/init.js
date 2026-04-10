@@ -246,6 +246,51 @@ async function create_tables(client) {
             );
         `);
 
+                // create nod table
+                await client.query(`
+                        CREATE TABLE IF NOT EXISTS nod (
+                            ri VARCHAR(${len.ri_max}) PRIMARY KEY,
+                            ty INTEGER NOT NULL DEFAULT 14,
+                            sid VARCHAR(${len.structured_res_id}) NOT NULL UNIQUE,
+                            cr VARCHAR(${len.str_token}),
+                            int_cr VARCHAR(${len.str_token}),
+                            rn VARCHAR(${len.str_token}) NOT NULL,
+                            pi VARCHAR(${len.ri_max}),
+                            et VARCHAR(${len.timestamp}),
+                            ct VARCHAR(${len.timestamp}),
+                            lt VARCHAR(${len.timestamp}),
+                            acpi VARCHAR(${len.structured_res_id})[],
+                            lbl VARCHAR(${len.str_token})[],
+                            ni VARCHAR(${len.str_token}),
+                            hcl INTEGER,
+                            mgca VARCHAR(${len.structured_res_id})[],
+                            loc GEOMETRY(GEOMETRY, 4326)
+                        );
+                `);
+
+                // create mgo table
+                await client.query(`
+                        CREATE TABLE IF NOT EXISTS mgo (
+                            ri VARCHAR(${len.ri_max}) PRIMARY KEY,
+                            ty INTEGER NOT NULL DEFAULT 13,
+                            sid VARCHAR(${len.structured_res_id}) NOT NULL UNIQUE,
+                            cr VARCHAR(${len.str_token}),
+                            int_cr VARCHAR(${len.str_token}),
+                            rn VARCHAR(${len.str_token}) NOT NULL,
+                            pi VARCHAR(${len.ri_max}),
+                            et VARCHAR(${len.timestamp}),
+                            ct VARCHAR(${len.timestamp}),
+                            lt VARCHAR(${len.timestamp}),
+                            acpi VARCHAR(${len.structured_res_id})[],
+                            lbl VARCHAR(${len.str_token})[],
+                            mgd INTEGER NOT NULL,
+                            obis VARCHAR(${len.str_token}),
+                            obps JSONB,
+                            dc TEXT,
+                            loc GEOMETRY(GEOMETRY, 4326)
+                        );
+                `);
+
         // create mrp table
         await client.query(`
             CREATE TABLE IF NOT EXISTS mrp (

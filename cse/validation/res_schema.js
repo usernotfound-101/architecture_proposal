@@ -245,6 +245,64 @@ const grp_update_schema = Joi.object().keys({
     gn: Joi.string().optional(),
 });
 
+const nod_create_schema = Joi.object().keys({
+    ...create_universal_attr,
+
+    et: create_common_attr.et,
+    acpi: create_common_attr.acpi,
+    lbl: create_common_attr.lbl,
+    cr: create_common_attr.cr,
+    loc: create_common_attr.loc,
+
+    ni: Joi.string().optional(),
+    hcl: Joi.number().integer().optional(),
+    mgca: Joi.array().optional().items(Joi.string()),
+});
+
+const nod_update_schema = Joi.object().keys({
+    ...update_universal_attr,
+
+    et: update_common_attr.et,
+    acpi: update_common_attr.acpi,
+    lbl: update_common_attr.lbl,
+    cr: update_common_attr.cr,
+    loc: update_common_attr.loc,
+
+    ni: Joi.string().optional(),
+    hcl: Joi.number().integer().optional(),
+    mgca: Joi.array().optional().items(Joi.string()),
+});
+
+const mgo_create_schema = Joi.object().keys({
+    ...create_universal_attr,
+
+    et: create_common_attr.et,
+    acpi: create_common_attr.acpi,
+    lbl: create_common_attr.lbl,
+    cr: create_common_attr.cr,
+    loc: create_common_attr.loc,
+
+    mgd: Joi.number().integer().required(),
+    obis: Joi.string().optional(),
+    obps: Joi.any().optional(),
+    dc: Joi.string().optional(),
+});
+
+const mgo_update_schema = Joi.object().keys({
+    ...update_universal_attr,
+
+    et: update_common_attr.et,
+    acpi: update_common_attr.acpi,
+    lbl: update_common_attr.lbl,
+    cr: update_common_attr.cr,
+    loc: update_common_attr.loc,
+
+    mgd: Joi.forbidden(),
+    obis: Joi.string().optional(),
+    obps: Joi.any().optional(),
+    dc: Joi.string().optional(),
+});
+
 const sub_create_schema = Joi.object().keys({
     ...create_universal_attr,
 
@@ -331,6 +389,8 @@ module.exports = {
     cnt_create_schema, cnt_update_schema,
     cin_create_schema,
     grp_create_schema, grp_update_schema,
+    nod_create_schema, nod_update_schema,
+    mgo_create_schema, mgo_update_schema,
     sub_create_schema, sub_update_schema,
     dsp_create_schema, dsp_update_schema
 }
